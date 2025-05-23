@@ -211,6 +211,8 @@
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
         }
 
         .table-preview table {
@@ -224,6 +226,9 @@
             padding: 12px 8px;
             font-size: 0.85em;
             text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .table-preview td {
@@ -448,14 +453,19 @@
             document.getElementById('previewCrescimento').textContent = `${crescimentoPercentual.toFixed(1)}%`;
             document.getElementById('previewEntradaMedia').textContent = `R$ ${entradaMedia.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-            // Atualizar tabela de preview (primeiros 10 dias)
+            // Atualizar tabela de preview (todos os dias)
             const previewTable = document.getElementById('previewTable');
             previewTable.innerHTML = '';
             
-            const diasParaMostrar = Math.min(10, dadosCalculados.length);
-            for (let i = 0; i < diasParaMostrar; i++) {
-                const item = dadosCalculados[i];
+            dadosCalculados.forEach((item, index) => {
                 const tr = document.createElement('tr');
+                
+                // Destacar finais de semana (a cada 7 dias)
+                if ((index + 1) % 7 === 0) {
+                    tr.style.backgroundColor = '#e3f2fd';
+                    tr.style.fontWeight = 'bold';
+                }
+                
                 tr.innerHTML = `
                     <td><strong>${item.dia}</strong></td>
                     <td class="currency">R$ ${item.bancaInicial.toFixed(2)}</td>
@@ -465,13 +475,7 @@
                     <td class="currency">R$ ${item.novaBanca.toFixed(2)}</td>
                 `;
                 previewTable.appendChild(tr);
-            }
-
-            if (dadosCalculados.length > 10) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="6" style="text-align: center; font-style: italic; color: #666;">... e mais ${dadosCalculados.length - 10} dias</td>`;
-                previewTable.appendChild(tr);
-            }
+            });
         }
 
         function gerarPlanilhaExcel() {
