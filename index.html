@@ -330,8 +330,8 @@
                         <input type="number" id="bancaInicial" value="400" min="1" step="0.01">
                     </div>
                     <div class="input-group">
-                        <label for="metaPercentual">🎯 Meta Diária (%)</label>
-                        <input type="number" id="metaPercentual" value="5" min="0.1" step="0.1">
+                        <label for="investimentoPercentual">💸 % Investimento Diário</label>
+                        <input type="number" id="investimentoPercentual" value="10" min="0.1" step="0.1">
                     </div>
                     <div class="input-group">
                         <label for="payoutPercentual">💹 Payout (%)</label>
@@ -348,10 +348,13 @@
                 </div>
 
                 <div class="info-box">
-                    <h3>📋 Como funciona o cálculo dinâmico:</h3>
-                    <p><strong>Valor por Operação =</strong> (Meta Diária ÷ Operações por Dia) ÷ (Payout ÷ 100)</p>
-                    <p>Exemplo: Meta de R$ 20 ÷ 2 operações = R$ 10 lucro por operação<br>
-                    R$ 10 ÷ 0,88 payout = <strong>R$ 11,36 por entrada</strong></p>
+                    <h3>📋 Como funciona o cálculo:</h3>
+                    <p><strong>Total Investido no Dia =</strong> Banca Atual × (% Investimento ÷ 100)</p>
+                    <p><strong>Valor por Operação =</strong> Total Investido ÷ Operações por Dia</p>
+                    <p><strong>Lucro por Operação =</strong> Valor por Operação × (Payout ÷ 100)</p>
+                    <p>Exemplo: Banca R$ 400 × 10% = R$ 40 investidos no dia<br>
+                    R$ 40 ÷ 2 operações = <strong>R$ 20 por entrada</strong><br>
+                    R$ 20 × 0,88 = <strong>R$ 17,60 lucro por operação</strong></p>
                 </div>
             </div>
 
@@ -360,23 +363,23 @@
                 <div class="preview-grid">
                     <div class="preview-item">
                         <h4>Banca Final</h4>
-                        <div class="value" id="previewBancaFinal">R$ 1.728,78</div>
+                        <div class="value" id="previewBancaFinal">R$ 0,00</div>
                     </div>
                     <div class="preview-item">
                         <h4>Lucro Total</h4>
-                        <div class="value" id="previewLucroTotal">R$ 1.328,78</div>
+                        <div class="value" id="previewLucroTotal">R$ 0,00</div>
                     </div>
                     <div class="preview-item">
                         <h4>Crescimento</h4>
-                        <div class="value" id="previewCrescimento">332%</div>
+                        <div class="value" id="previewCrescimento">0%</div>
                     </div>
                     <div class="preview-item">
                         <h4>Entrada por Op.</h4>
-                        <div class="value" id="previewEntradaPorOp">R$ 11,36</div>
+                        <div class="value" id="previewEntradaPorOp">R$ 0,00</div>
                     </div>
                     <div class="preview-item">
                         <h4>Lucro por Op.</h4>
-                        <div class="value" id="previewLucroPorOp">R$ 10,00</div>
+                        <div class="value" id="previewLucroPorOp">R$ 0,00</div>
                     </div>
                 </div>
 
@@ -386,11 +389,11 @@
                             <tr>
                                 <th>Dia</th>
                                 <th>Banca Inicial</th>
-                                <th>Meta Diária</th>
-                                <th>Ops/Dia</th>
-                                <th>Lucro/Op</th>
-                                <th>Entrada/Op</th>
+                                <th>% Investido</th>
                                 <th>Total Investido</th>
+                                <th>Ops/Dia</th>
+                                <th>Entrada/Op</th>
+                                <th>Lucro/Op</th>
                                 <th>Nova Banca</th>
                             </tr>
                         </thead>
@@ -413,21 +416,22 @@
                 <h3>🎯 O que você vai receber:</h3>
                 <ul>
                     <li>Planilha totalmente funcional com fórmulas dinâmicas</li>
-                    <li>Cálculo automático do valor por operação baseado na meta</li>
+                    <li>Cálculo baseado em % de investimento da banca</li>
                     <li>Controle do número de operações por dia</li>
-                    <li>Célula de banca inicial editável (B2)</li>
                     <li>Formatação profissional com cores destacadas</li>
                     <li>Resumo executivo com métricas importantes</li>
                     <li>Compatível com Excel, Google Sheets e LibreOffice</li>
                     <li>Versão CSV para máxima compatibilidade</li>
+                    <li>Suas configurações são salvas automaticamente</li>
                 </ul>
             </div>
 
             <div class="note">
                 <strong>💡 Instruções:</strong><br>
-                1. <strong>Excel (.xlsx):</strong> Após baixar, abra no Excel ou Google Sheets. Altere a célula B2 (Banca Inicial) e o número de operações por dia, e todos os valores serão recalculados automaticamente.<br>
-                2. <strong>CSV:</strong> Versão compatível com qualquer programa de planilhas. Os valores são calculados com base nas configurações atuais.<br>
-                3. <strong>Valor Dinâmico:</strong> O sistema calcula automaticamente quanto você deve investir por operação para atingir sua meta diária.
+                1. <strong>Excel (.xlsx):</strong> Após baixar, abra no Excel ou Google Sheets. Os valores são baseados nas suas configurações.<br>
+                2. <strong>CSV:</strong> Versão compatível com qualquer programa de planilhas.<br>
+                3. <strong>Investimento Diário:</strong> O sistema calcula quanto investir por operação baseado na % da banca que você definiu.<br>
+                4. <strong>Salvamento Automático:</strong> Suas configurações são salvas automaticamente no navegador.
             </div>
         </div>
     </div>
@@ -435,9 +439,39 @@
     <script>
         let dadosCalculados = [];
 
+        // Carregar dados salvos ao iniciar
+        function carregarDadosSalvos() {
+            const dadosSalvos = localStorage.getItem('opcoesBindarias_config');
+            if (dadosSalvos) {
+                try {
+                    const config = JSON.parse(dadosSalvos);
+                    document.getElementById('bancaInicial').value = config.bancaInicial || 400;
+                    document.getElementById('investimentoPercentual').value = config.investimentoPercentual || 10;
+                    document.getElementById('payoutPercentual').value = config.payoutPercentual || 88;
+                    document.getElementById('operacoesPorDia').value = config.operacoesPorDia || 2;
+                    document.getElementById('diasPlanejamento').value = config.diasPlanejamento || 30;
+                } catch (e) {
+                    console.error('Erro ao carregar dados salvos:', e);
+                }
+            }
+        }
+
+        // Salvar dados no localStorage
+        function salvarDados() {
+            const config = {
+                bancaInicial: parseFloat(document.getElementById('bancaInicial').value) || 400,
+                investimentoPercentual: parseFloat(document.getElementById('investimentoPercentual').value) || 10,
+                payoutPercentual: parseFloat(document.getElementById('payoutPercentual').value) || 88,
+                operacoesPorDia: parseInt(document.getElementById('operacoesPorDia').value) || 2,
+                diasPlanejamento: parseInt(document.getElementById('diasPlanejamento').value) || 30,
+                dataUltimaAtualizacao: new Date().toISOString()
+            };
+            localStorage.setItem('opcoesBindarias_config', JSON.stringify(config));
+        }
+
         function calcularDados() {
             const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
-            const metaPercentual = parseFloat(document.getElementById('metaPercentual').value) || 5;
+            const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
             const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
             const operacoesPorDia = parseInt(document.getElementById('operacoesPorDia').value) || 2;
             const diasPlanejamento = parseInt(document.getElementById('diasPlanejamento').value) || 30;
@@ -446,20 +480,20 @@
             let bancaAtual = bancaInicial;
 
             for (let dia = 1; dia <= diasPlanejamento; dia++) {
-                const metaDiaria = bancaAtual * (metaPercentual / 100);
-                const lucroPorOperacao = metaDiaria / operacoesPorDia;
-                const entradaPorOperacao = lucroPorOperacao / (payoutPercentual / 100);
-                const totalInvestidoDia = entradaPorOperacao * operacoesPorDia;
-                const novaBanca = bancaAtual + metaDiaria;
+                const totalInvestidoDia = bancaAtual * (investimentoPercentual / 100);
+                const entradaPorOperacao = totalInvestidoDia / operacoesPorDia;
+                const lucroPorOperacao = entradaPorOperacao * (payoutPercentual / 100);
+                const lucroTotalDia = lucroPorOperacao * operacoesPorDia;
+                const novaBanca = bancaAtual + lucroTotalDia;
 
                 dadosCalculados.push({
                     dia: dia,
                     bancaInicial: bancaAtual,
-                    metaDiaria: metaDiaria,
-                    operacoesPorDia: operacoesPorDia,
-                    lucroPorOperacao: lucroPorOperacao,
-                    entradaPorOperacao: entradaPorOperacao,
+                    investimentoPercentual: investimentoPercentual,
                     totalInvestidoDia: totalInvestidoDia,
+                    operacoesPorDia: operacoesPorDia,
+                    entradaPorOperacao: entradaPorOperacao,
+                    lucroPorOperacao: lucroPorOperacao,
                     novaBanca: novaBanca
                 });
 
@@ -467,6 +501,7 @@
             }
 
             atualizarPreview();
+            salvarDados();
         }
 
         function atualizarPreview() {
@@ -477,7 +512,6 @@
             const lucroTotal = bancaFinal - bancaInicial;
             const crescimentoPercentual = ((bancaFinal - bancaInicial) / bancaInicial) * 100;
             
-            // Valores do primeiro dia para mostrar na preview
             const entradaPorOp = dadosCalculados[0].entradaPorOperacao;
             const lucroPorOp = dadosCalculados[0].lucroPorOperacao;
 
@@ -487,14 +521,12 @@
             document.getElementById('previewEntradaPorOp').textContent = `R$ ${entradaPorOp.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('previewLucroPorOp').textContent = `R$ ${lucroPorOp.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-            // Atualizar tabela de preview
             const previewTable = document.getElementById('previewTable');
             previewTable.innerHTML = '';
             
             dadosCalculados.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 
-                // Destacar finais de semana (a cada 7 dias)
                 if ((index + 1) % 7 === 0) {
                     tr.style.backgroundColor = '#e3f2fd';
                     tr.style.fontWeight = 'bold';
@@ -503,11 +535,11 @@
                 tr.innerHTML = `
                     <td><strong>${item.dia}</strong></td>
                     <td class="currency">R$ ${item.bancaInicial.toFixed(2)}</td>
-                    <td class="currency">R$ ${item.metaDiaria.toFixed(2)}</td>
-                    <td><strong>${item.operacoesPorDia}</strong></td>
-                    <td class="currency">R$ ${item.lucroPorOperacao.toFixed(2)}</td>
-                    <td class="currency">R$ ${item.entradaPorOperacao.toFixed(2)}</td>
+                    <td><strong>${item.investimentoPercentual}%</strong></td>
                     <td class="currency">R$ ${item.totalInvestidoDia.toFixed(2)}</td>
+                    <td><strong>${item.operacoesPorDia}</strong></td>
+                    <td class="currency">R$ ${item.entradaPorOperacao.toFixed(2)}</td>
+                    <td class="currency">R$ ${item.lucroPorOperacao.toFixed(2)}</td>
                     <td class="currency">R$ ${item.novaBanca.toFixed(2)}</td>
                 `;
                 previewTable.appendChild(tr);
@@ -516,50 +548,46 @@
 
         function gerarPlanilhaExcel() {
             const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
-            const metaPercentual = parseFloat(document.getElementById('metaPercentual').value) || 5;
+            const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
             const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
             const operacoesPorDia = parseInt(document.getElementById('operacoesPorDia').value) || 2;
 
-            // Criar dados para o Excel com fórmulas
             const dadosExcel = [
-                ['GERENCIAMENTO DE BANCA - OPÇÕES BINÁRIAS (DINÂMICO)', '', '', '', '', '', '', ''],
-                ['Banca Inicial (R$):', bancaInicial, 'Meta Diária (%):', metaPercentual, 'Payout (%):', payoutPercentual, 'Ops/Dia:', operacoesPorDia],
+                ['GERENCIAMENTO DE BANCA - OPÇÕES BINÁRIAS (% INVESTIMENTO)', '', '', '', '', '', '', ''],
+                ['Banca Inicial (R$):', bancaInicial, '% Investimento Diário:', investimentoPercentual, 'Payout (%):', payoutPercentual, 'Ops/Dia:', operacoesPorDia],
                 ['', '', '', '', '', '', '', ''],
-                ['Dia', 'Banca Inicial (R$)', 'Meta Diária (R$)', 'Ops/Dia', 'Lucro por Op (R$)', 'Entrada por Op (R$)', 'Total Investido (R$)', 'Nova Banca (R$)']
+                ['Dia', 'Banca Inicial (R$)', '% Investido', 'Total Investido (R$)', 'Ops/Dia', 'Entrada por Op (R$)', 'Lucro por Op (R$)', 'Nova Banca (R$)']
             ];
 
-            // Adicionar dados calculados
             dadosCalculados.forEach(item => {
                 dadosExcel.push([
                     item.dia,
                     parseFloat(item.bancaInicial.toFixed(2)),
-                    parseFloat(item.metaDiaria.toFixed(2)),
-                    item.operacoesPorDia,
-                    parseFloat(item.lucroPorOperacao.toFixed(2)),
-                    parseFloat(item.entradaPorOperacao.toFixed(2)),
+                    item.investimentoPercentual,
                     parseFloat(item.totalInvestidoDia.toFixed(2)),
+                    item.operacoesPorDia,
+                    parseFloat(item.entradaPorOperacao.toFixed(2)),
+                    parseFloat(item.lucroPorOperacao.toFixed(2)),
                     parseFloat(item.novaBanca.toFixed(2))
                 ]);
             });
 
-            // Adicionar resumo
             dadosExcel.push(['', '', '', '', '', '', '', '']);
             dadosExcel.push(['RESUMO EXECUTIVO:', '', '', '', '', '', '', '']);
             dadosExcel.push(['Banca Final:', dadosCalculados[dadosCalculados.length - 1].novaBanca.toFixed(2), '', '', '', '', '', '']);
             dadosExcel.push(['Lucro Total:', (dadosCalculados[dadosCalculados.length - 1].novaBanca - bancaInicial).toFixed(2), '', '', '', '', '', '']);
             dadosExcel.push(['Crescimento (%):', (((dadosCalculados[dadosCalculados.length - 1].novaBanca - bancaInicial) / bancaInicial) * 100).toFixed(2), '', '', '', '', '', '']);
             dadosExcel.push(['Operações por Dia:', operacoesPorDia, '', '', '', '', '', '']);
+            dadosExcel.push(['% Investimento Diário:', investimentoPercentual, '', '', '', '', '', '']);
 
-            // Converter para CSV para máxima compatibilidade
             let csvContent = '';
             dadosExcel.forEach(row => {
                 csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
             });
 
-            // Download do arquivo
             const agora = new Date();
             const dataFormatada = agora.toISOString().split('T')[0];
-            const filename = `Planejamento_Opcoes_Binarias_${operacoesPorDia}ops_R$${bancaInicial}_${dataFormatada}.csv`;
+            const filename = `Planejamento_Opcoes_Binarias_${investimentoPercentual}pct_${operacoesPorDia}ops_R$${bancaInicial}_${dataFormatada}.csv`;
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -569,20 +597,18 @@
         }
 
         function gerarPlanilhaCSV() {
-            // Criar cabeçalho
-            let csvContent = 'Dia,Banca Inicial (R$),Meta Diária (R$),Ops/Dia,Lucro por Op (R$),Entrada por Op (R$),Total Investido (R$),Nova Banca (R$)\n';
+            let csvContent = 'Dia,Banca Inicial (R$),% Investido,Total Investido (R$),Ops/Dia,Entrada por Op (R$),Lucro por Op (R$),Nova Banca (R$)\n';
             
-            // Adicionar dados
             dadosCalculados.forEach(item => {
-                csvContent += `${item.dia},${item.bancaInicial.toFixed(2)},${item.metaDiaria.toFixed(2)},${item.operacoesPorDia},${item.lucroPorOperacao.toFixed(2)},${item.entradaPorOperacao.toFixed(2)},${item.totalInvestidoDia.toFixed(2)},${item.novaBanca.toFixed(2)}\n`;
+                csvContent += `${item.dia},${item.bancaInicial.toFixed(2)},${item.investimentoPercentual},${item.totalInvestidoDia.toFixed(2)},${item.operacoesPorDia},${item.entradaPorOperacao.toFixed(2)},${item.lucroPorOperacao.toFixed(2)},${item.novaBanca.toFixed(2)}\n`;
             });
 
-            // Download
             const agora = new Date();
             const dataFormatada = agora.toISOString().split('T')[0];
             const bancaInicial = document.getElementById('bancaInicial').value;
+            const investimentoPercentual = document.getElementById('investimentoPercentual').value;
             const operacoesPorDia = document.getElementById('operacoesPorDia').value;
-            const filename = `Planejamento_Opcoes_Binarias_${operacoesPorDia}ops_R$${bancaInicial}_${dataFormatada}.csv`;
+            const filename = `Planejamento_Opcoes_Binarias_${investimentoPercentual}pct_${operacoesPorDia}ops_R$${bancaInicial}_${dataFormatada}.csv`;
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -593,12 +619,13 @@
 
         // Event listeners
         document.getElementById('bancaInicial').addEventListener('input', calcularDados);
-        document.getElementById('metaPercentual').addEventListener('input', calcularDados);
+        document.getElementById('investimentoPercentual').addEventListener('input', calcularDados);
         document.getElementById('payoutPercentual').addEventListener('input', calcularDados);
         document.getElementById('operacoesPorDia').addEventListener('input', calcularDados);
         document.getElementById('diasPlanejamento').addEventListener('input', calcularDados);
 
-        // Inicializar
+        // Carregar dados salvos e inicializar
+        carregarDadosSalvos();
         calcularDados();
     </script>
 </body>
