@@ -1,15 +1,26 @@
+<h3 id="indicadorBancaAtual" style="text-align:center;color:#2ecc71;margin-top:20px;">
+💰 Banca Atual: R$ 0,00
+</h3>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
 let dadosCalculados=[];
 
 function salvarDados(){
+  const bancaEl=document.getElementById("bancaInicial");
+  const percEl=document.getElementById("investimentoPercentual");
+  const payoutEl=document.getElementById("payoutPercentual");
+  const opsEl=document.getElementById("operacoesPorDia");
+  const diasEl=document.getElementById("diasPlanejamento");
+
+  if(!bancaEl||!percEl||!payoutEl||!opsEl||!diasEl) return;
+
   const cfg={
-    bancaInicial:+document.getElementById("bancaInicial").value||400,
-    investimentoPercentual:+document.getElementById("investimentoPercentual").value||10,
-    payoutPercentual:+document.getElementById("payoutPercentual").value||88,
-    operacoesPorDia:+document.getElementById("operacoesPorDia").value||2,
-    diasPlanejamento:+document.getElementById("diasPlanejamento").value||30,
+    bancaInicial:+bancaEl.value||400,
+    investimentoPercentual:+percEl.value||10,
+    payoutPercentual:+payoutEl.value||88,
+    operacoesPorDia:+opsEl.value||2,
+    diasPlanejamento:+diasEl.value||30,
     tipoGerenciamento:document.querySelector('input[name="tipoGerenciamento"]:checked')?.value||"fixo"
   };
   localStorage.setItem("configBinarias",JSON.stringify(cfg));
@@ -26,30 +37,37 @@ function carregarDados(){
     if(el && c[id]!==undefined) el.value=c[id];
   });
 
-  // evita erro caso os inputs ainda não existam
   if(c.tipoGerenciamento){
     const radio=document.querySelector(`input[name="tipoGerenciamento"][value="${c.tipoGerenciamento}"]`);
     if(radio) radio.checked=true;
   }
 }
 
-function formatar(valor){
-  return valor.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+function formatar(v){
+  return v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 function calcularDados(){
-  const bancaInicial=+document.getElementById("bancaInicial").value||400;
-  const perc=+document.getElementById("investimentoPercentual").value||10;
-  const payout=+document.getElementById("payoutPercentual").value||88;
-  const ops=+document.getElementById("operacoesPorDia").value||2;
-  const dias=+document.getElementById("diasPlanejamento").value||30;
+  const bancaEl=document.getElementById("bancaInicial");
+  const percEl=document.getElementById("investimentoPercentual");
+  const payoutEl=document.getElementById("payoutPercentual");
+  const opsEl=document.getElementById("operacoesPorDia");
+  const diasEl=document.getElementById("diasPlanejamento");
+
+  if(!bancaEl||!percEl||!payoutEl||!opsEl||!diasEl) return; // evita erro
+
+  const bancaInicial=+bancaEl.value||400;
+  const perc=+percEl.value||10;
+  const payout=+payoutEl.value||88;
+  const ops=+opsEl.value||2;
+  const dias=+diasEl.value||30;
   const tipo=document.querySelector('input[name="tipoGerenciamento"]:checked')?.value||"fixo";
 
   dadosCalculados=[];
   let banca=bancaInicial;
 
-  for(let d=1; d<=dias; d++){
-    let totalInvestidoDia, entradaPorOperacao, lucroPorOperacao, lucroTotalDia, novaBanca;
+  for(let d=1;d<=dias;d++){
+    let totalInvestidoDia,entradaPorOperacao,lucroPorOperacao,lucroTotalDia,novaBanca;
 
     if(tipo==="fixo"){
       totalInvestidoDia=banca*(perc/100);
@@ -59,7 +77,7 @@ function calcularDados(){
       entradaPorOperacao=Array(ops).fill(entrada);
       lucroPorOperacao=Array(ops).fill(lucroOp);
       novaBanca=banca+lucroTotalDia;
-    } else {
+    }else{
       const entradaBase=banca*(perc/100);
       const entradas=[],lucros=[];
       for(let i=0;i<ops;i++){
@@ -76,17 +94,9 @@ function calcularDados(){
     }
 
     dadosCalculados.push({
-      dia:d,
-      bancaInicial:banca,
-      investimentoPercentual:perc,
-      totalInvestidoDia,
-      operacoesPorDia:ops,
-      entradaPorOperacao,
-      lucroPorOperacao,
-      lucroTotalDia,
-      novaBanca,
-      tipoGerenciamento:tipo,
-      resultado:"none"
+      dia:d,bancaInicial:banca,investimentoPercentual:perc,totalInvestidoDia,
+      operacoesPorDia:ops,entradaPorOperacao,lucroPorOperacao,lucroTotalDia,
+      novaBanca,tipoGerenciamento:tipo,resultado:"none"
     });
     banca=novaBanca;
   }
@@ -111,7 +121,6 @@ function aplicarResultado(diaIndex,resultado){
     d.resultado="Loss 2ª";
   } else d.resultado="Win";
 
-  // Recalcular os dias seguintes
   for(let i=diaIndex+1;i<dadosCalculados.length;i++){
     const prev=dadosCalculados[i-1];
     dadosCalculados[i].bancaInicial=prev.novaBanca;
@@ -130,7 +139,7 @@ function aplicarResultado(diaIndex,resultado){
       dadosCalculados[i].lucroPorOperacao=lucros;
       dadosCalculados[i].lucroTotalDia=lucros.reduce((s,v)=>s+v,0);
       dadosCalculados[i].novaBanca=prev.novaBanca+dadosCalculados[i].lucroTotalDia;
-    } else {
+    }else{
       const total=prev.novaBanca*(perc/100);
       const entrada=total/dadosCalculados[i].operacoesPorDia;
       const lucro=entrada*payout;
@@ -147,9 +156,7 @@ function aplicarResultado(diaIndex,resultado){
 
 function resetarSimulacao(limparConfig=false){
   dadosCalculados.forEach(d=>d.resultado="none");
-  if(limparConfig){
-    localStorage.removeItem("configBinarias");
-  }
+  if(limparConfig) localStorage.removeItem("configBinarias");
   calcularDados();
 }
 
@@ -162,6 +169,7 @@ function atualizarPreview(){
   const crescimento=((bf-bi)/bi)*100;
   const lucroMedioDia=lucroTotal/dadosCalculados.length;
 
+  // Atualiza cards de preview
   document.getElementById("previewBancaFinal").textContent=`R$ ${formatar(bf)}`;
   document.getElementById("previewLucroTotal").textContent=`R$ ${formatar(lucroTotal)}`;
   document.getElementById("previewCrescimento").textContent=`${crescimento.toFixed(1)}%`;
@@ -171,7 +179,11 @@ function atualizarPreview(){
   const t=document.getElementById("previewTable");
   t.innerHTML="";
 
-  // Botão reset
+  // 💰 indicador de saldo atual
+  const indicador=document.getElementById("indicadorBancaAtual");
+  if(indicador) indicador.textContent=`💰 Banca Atual: R$ ${formatar(bf)}`;
+
+  // botão reset
   t.innerHTML+=`
     <tr style="background:#f0f0f0;">
       <td colspan="10" style="text-align:right;">
@@ -187,7 +199,6 @@ function atualizarPreview(){
   dadosCalculados.forEach((r,i)=>{
     const entradaDisp=r.entradaPorOperacao.map((v,j)=>`${j+1}ª: R$ ${formatar(v)}`).join(" → ");
     const lucroDisp=r.lucroPorOperacao.map((v,j)=>`${j+1}ª: R$ ${formatar(v)}`).join(" → ");
-
     let bgColor="";
     if(r.resultado==="Win") bgColor="style='background:#d4edda'";
     else if(r.resultado==="Loss 1ª") bgColor="style='background:#f8d7da'";
@@ -211,17 +222,13 @@ function atualizarPreview(){
       </tr>`;
   });
 
-  const resumoHTML=`
+  t.innerHTML+=`
     <tr style="background:#e3f2fd;font-weight:bold;">
-      <td colspan="3">Totais</td>
-      <td colspan="2"></td>
-      <td>Lucro Total Acumulado:</td>
-      <td class="currency">R$ ${formatar(lucroTotal)}</td>
-      <td>Crescimento:</td>
-      <td class="currency">${crescimento.toFixed(2)}%</td>
+      <td colspan="3">Totais</td><td colspan="2"></td>
+      <td>Lucro Total:</td><td class="currency">R$ ${formatar(lucroTotal)}</td>
+      <td>Crescimento:</td><td>${crescimento.toFixed(2)}%</td>
       <td>Lucro Médio/Dia: R$ ${formatar(lucroMedioDia)}</td>
     </tr>`;
-  t.innerHTML+=resumoHTML;
 }
 
 /* === EVENTOS === */
@@ -230,7 +237,7 @@ function atualizarPreview(){
 document.querySelectorAll('input[name="tipoGerenciamento"]').forEach(r=>r.addEventListener("change",calcularDados));
 
 carregarDados();
-calcularDados();
+setTimeout(calcularDados,100); // espera 100ms p/ garantir DOM pronto
 
 });
 </script>
