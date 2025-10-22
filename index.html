@@ -1,179 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciador de Banca - Simulador</title>
+<style>
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  color:#333;padding:20px;
+}
+.container{
+  background:#fff;max-width:1100px;margin:auto;padding:25px;
+  border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+h1{text-align:center;color:#2c3e50;}
+.config{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:20px 0;}
+input{padding:10px;border:2px solid #ddd;border-radius:8px;font-size:1em;}
+button{
+  border:none;border-radius:6px;cursor:pointer;padding:6px 10px;
+  font-size:.9em;font-weight:bold;color:white;
+}
+button.win{background:#2ecc71;}
+button.loss{background:#e74c3c;}
+button.win:hover{background:#27ae60;}
+button.loss:hover{background:#c0392b;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:8px;text-align:center;border-bottom:1px solid #ddd;}
+th{background:#2c3e50;color:white;position:sticky;top:0;}
+.currency{color:#27ae60;font-weight:600;}
+tfoot td{background:#f3f9ff;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>📊 Simulador de Gerenciamento de Banca</h1>
+
+<div class="config">
+  <div><label>💰 Banca Inicial<br><input id="bancaInicial" type="number" value="400"></label></div>
+  <div><label>💸 % Investimento Diário<br><input id="investimentoPercentual" type="number" value="10"></label></div>
+  <div><label>💹 Payout (%)<br><input id="payoutPercentual" type="number" value="88"></label></div>
+  <div><label>🔢 Operações por Dia<br><input id="operacoesPorDia" type="number" value="2"></label></div>
+  <div><label>📅 Dias Planejamento<br><input id="diasPlanejamento" type="number" value="30"></label></div>
+</div>
+
+<div>
+  <label><input type="radio" name="tipoGerenciamento" value="fixo" checked> Mão Fixa</label>
+  <label><input type="radio" name="tipoGerenciamento" value="soros"> Mão de Soros</label>
+</div>
+
+<table id="tabela">
+<thead>
+<tr>
+<th>Dia</th><th>Banca Inicial</th><th>%</th><th>Entradas</th>
+<th>Lucros</th><th>Lucro Diário</th><th>Nova Banca</th><th>Gerenciamento</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="linhas"></tbody>
+<tfoot id="resumo"></tfoot>
+</table>
+</div>
+
 <script>
-let dadosCalculados=[];
+document.addEventListener("DOMContentLoaded",()=>{
 
-function salvarDados(){
-  const cfg={
-    bancaInicial:+document.getElementById("bancaInicial").value||400,
-    investimentoPercentual:+document.getElementById("investimentoPercentual").value||10,
-    payoutPercentual:+document.getElementById("payoutPercentual").value||88,
-    operacoesPorDia:+document.getElementById("operacoesPorDia").value||2,
-    diasPlanejamento:+document.getElementById("diasPlanejamento").value||30,
-    tipoGerenciamento:document.querySelector('input[name="tipoGerenciamento"]:checked').value
-  };
-  localStorage.setItem("configBinarias",JSON.stringify(cfg));
-}
+let dados=[];
 
-function carregarDados(){
-  const s=localStorage.getItem("configBinarias");
-  if(!s)return;
-  const c=JSON.parse(s);
-  document.getElementById("bancaInicial").value=c.bancaInicial;
-  document.getElementById("investimentoPercentual").value=c.investimentoPercentual;
-  document.getElementById("payoutPercentual").value=c.payoutPercentual;
-  document.getElementById("operacoesPorDia").value=c.operacoesPorDia;
-  document.getElementById("diasPlanejamento").value=c.diasPlanejamento;
-  if(c.tipoGerenciamento)
-    document.querySelector(`input[value="${c.tipoGerenciamento}"]`).checked=true;
-}
-
-function calcularDados(){
-  const bancaInicial=+document.getElementById("bancaInicial").value||400;
-  const perc=+document.getElementById("investimentoPercentual").value||10;
-  const payout=+document.getElementById("payoutPercentual").value||88;
-  const ops=+document.getElementById("operacoesPorDia").value||2;
-  const dias=+document.getElementById("diasPlanejamento").value||30;
+function calcular(){
+  const bancaInicial=+bancaInput("bancaInicial");
+  const perc=+bancaInput("investimentoPercentual");
+  const payout=+bancaInput("payoutPercentual");
+  const ops=+bancaInput("operacoesPorDia");
+  const dias=+bancaInput("diasPlanejamento");
   const tipo=document.querySelector('input[name="tipoGerenciamento"]:checked').value;
 
-  dadosCalculados=[];
-  let banca=bancaInicial;
-
-  for(let d=1; d<=dias; d++){
-    let totalInvestidoDia, entradaPorOperacao, lucroPorOperacao, lucroTotalDia, novaBanca;
-
+  dados=[];let banca=bancaInicial;
+  for(let d=1;d<=dias;d++){
+    let entradas=[],lucros=[],lucroDia=0;
     if(tipo==="fixo"){
-      totalInvestidoDia = banca * (perc/100);
-      const entrada = totalInvestidoDia / ops;
-      const lucroOp = entrada * (payout/100);
-      lucroTotalDia = lucroOp * ops;
-      entradaPorOperacao = [ ...Array(ops) ].map(()=>entrada);
-      lucroPorOperacao   = [ ...Array(ops) ].map(()=>lucroOp);
-      novaBanca = banca + lucroTotalDia;
-
-    } else { // --- MÃO DE SOROS ---
-      const entradaBase = banca * (perc/100);
-      const entradas = [];
-      const lucros   = [];
-
-      for(let i=0; i<ops; i++){
-        const entradaAtual = (i===0) ? entradaBase : (entradaBase + lucros[i-1]);
-        const lucroAtual   = entradaAtual * (payout/100);
-        entradas.push(entradaAtual);
-        lucros.push(lucroAtual);
+      const investDia=banca*(perc/100);
+      const entrada=investDia/ops;
+      for(let i=0;i<ops;i++){
+        const l=entrada*(payout/100);
+        entradas.push(entrada);
+        lucros.push(l);
+        lucroDia+=l;
       }
-
-      entradaPorOperacao = entradas;
-      lucroPorOperacao   = lucros;
-      totalInvestidoDia  = entradas.reduce((s,v)=>s+v,0);
-      lucroTotalDia      = lucros.reduce((s,v)=>s+v,0);
-      novaBanca          = banca + lucroTotalDia;
+      banca+=lucroDia;
+    }else{
+      const base=banca*(perc/100);
+      for(let i=0;i<ops;i++){
+        const entrada=i===0?base:(base+lucros[i-1]);
+        const lucro=entrada*(payout/100);
+        entradas.push(entrada);
+        lucros.push(lucro);
+        lucroDia+=lucro;
+      }
+      banca+=lucroDia;
     }
-
-    dadosCalculados.push({
-      dia: d,
-      bancaInicial: banca,
-      investimentoPercentual: perc,
-      totalInvestidoDia,
-      operacoesPorDia: ops,
-      entradaPorOperacao,
-      lucroPorOperacao,
-      lucroTotalDia, // 💰 lucro diário total
-      novaBanca,
-      tipoGerenciamento: tipo
-    });
-
-    banca = novaBanca;
+    dados.push({dia:d,entradas, lucros, lucroDia, tipo, bancaInicial:banca-(lucroDia), bancaFinal:banca});
   }
-
-  atualizarPreview();
-  salvarDados();
+  render();
 }
 
-function atualizarPreview(){
-  if(!dadosCalculados.length)return;
+function render(){
+  const tbody=document.getElementById("linhas");
+  const tfoot=document.getElementById("resumo");
+  tbody.innerHTML="";
 
-  const bi=dadosCalculados[0].bancaInicial;
-  const bf=dadosCalculados.at(-1).novaBanca;
-  const lucroTotal=bf-bi;
-  const crescimento=((bf-bi)/bi)*100;
-  const lucroMedioDia = lucroTotal / dadosCalculados.length;
-
-  document.getElementById("previewBancaFinal").textContent=`R$ ${bf.toFixed(2)}`;
-  document.getElementById("previewLucroTotal").textContent=`R$ ${lucroTotal.toFixed(2)}`;
-  document.getElementById("previewCrescimento").textContent=`${crescimento.toFixed(1)}%`;
-  document.getElementById("previewEntradaPorOp").textContent=`R$ ${dadosCalculados[0].entradaPorOperacao[0].toFixed(2)}`;
-  document.getElementById("previewLucroPorOp").textContent=`R$ ${dadosCalculados[0].lucroPorOperacao[0].toFixed(2)}`;
-
-  const t=document.getElementById("previewTable");
-  t.innerHTML="";
-  dadosCalculados.forEach(r=>{
-    const entradaDisp = Array.isArray(r.entradaPorOperacao)
-      ? r.entradaPorOperacao.map((v,i)=>`${i+1}ª: R$ ${v.toFixed(2)}`).join(" → ")
-      : `R$ ${r.entradaPorOperacao.toFixed(2)}`;
-
-    const lucroDisp = Array.isArray(r.lucroPorOperacao)
-      ? r.lucroPorOperacao.map((v,i)=>`${i+1}ª: R$ ${v.toFixed(2)}`).join(" → ")
-      : `R$ ${r.lucroPorOperacao.toFixed(2)}`;
-
-    t.innerHTML += `
-      <tr>
-        <td>${r.dia}</td>
-        <td class="currency">R$ ${r.bancaInicial.toFixed(2)}</td>
-        <td>${r.investimentoPercentual}%</td>
-        <td class="currency">R$ ${r.totalInvestidoDia.toFixed(2)}</td>
-        <td>${r.operacoesPorDia}</td>
-        <td class="currency">${entradaDisp}</td>
-        <td class="currency">${lucroDisp}</td>
-        <td class="currency"><strong>R$ ${r.lucroTotalDia.toFixed(2)}</strong></td>
-        <td class="currency">R$ ${r.novaBanca.toFixed(2)}</td>
-        <td>${r.tipoGerenciamento}</td>
-      </tr>`;
-  });
-
-  // 🧾 RESUMO FINAL ABAIXO DA TABELA
-  const resumoHTML = `
-    <tr style="background:#e3f2fd;font-weight:bold;">
-      <td colspan="3">Totais</td>
-      <td colspan="2"></td>
-      <td>Lucro Total Acumulado:</td>
-      <td class="currency">R$ ${lucroTotal.toFixed(2)}</td>
-      <td>Crescimento:</td>
-      <td class="currency">${crescimento.toFixed(2)}%</td>
-      <td>Lucro Médio/Dia: R$ ${lucroMedioDia.toFixed(2)}</td>
+  dados.forEach((r,i)=>{
+    const entr=r.entradas.map((v,j)=>`${j+1}ª:R$${v.toFixed(2)}`).join(" → ");
+    const luc=r.lucros.map((v,j)=>`${j+1}ª:R$${v.toFixed(2)}`).join(" → ");
+    tbody.innerHTML+=`
+    <tr>
+      <td>${r.dia}</td>
+      <td class='currency'>R$ ${r.bancaInicial.toFixed(2)}</td>
+      <td>${bancaInput("investimentoPercentual")}%</td>
+      <td>${entr}</td>
+      <td>${luc}</td>
+      <td class='currency'>R$ ${r.lucroDia.toFixed(2)}</td>
+      <td class='currency'>R$ ${r.bancaFinal.toFixed(2)}</td>
+      <td>${r.tipo}</td>
+      <td>
+        <button class="win" onclick="marcar(${i},'win')">Win</button>
+        <button class="loss" onclick="marcar(${i},'loss')">Loss</button>
+      </td>
     </tr>`;
-  t.innerHTML += resumoHTML;
-}
-
-function gerarPlanilhaCSV(){
-  if(!dadosCalculados.length)return;
-  let csv="Dia,Banca Inicial,% Investido,Total Investido,Ops/Dia,Entrada/Op,Lucro/Op,Lucro Diário Total,Nova Banca,Gerenciamento\n";
-  dadosCalculados.forEach(i=>{
-    const entradaDisp = Array.isArray(i.entradaPorOperacao)
-      ? i.entradaPorOperacao.map((v,j)=>`${j+1}ª:R$${v.toFixed(2)}`).join(">")
-      : i.entradaPorOperacao.toFixed(2);
-    const lucroDisp = Array.isArray(i.lucroPorOperacao)
-      ? i.lucroPorOperacao.map((v,j)=>`${j+1}ª:R$${v.toFixed(2)}`).join(">")
-      : i.lucroPorOperacao.toFixed(2);
-    csv += `${i.dia},${i.bancaInicial.toFixed(2)},${i.investimentoPercentual},${i.totalInvestidoDia.toFixed(2)},${i.operacoesPorDia},"${entradaDisp}","${lucroDisp}",${i.lucroTotalDia.toFixed(2)},${i.novaBanca.toFixed(2)},${i.tipoGerenciamento}\n`;
   });
-  const bi=dadosCalculados[0].bancaInicial;
-  const bf=dadosCalculados.at(-1).novaBanca;
-  const lucroTotal=bf-bi;
-  const crescimento=((bf-bi)/bi)*100;
-  const lucroMedioDia = lucroTotal / dadosCalculados.length;
-  csv += `\nRESUMO,,,\nLucro Total Acumulado,R$ ${lucroTotal.toFixed(2)}\nCrescimento,${crescimento.toFixed(2)}%\nLucro Médio Diário,R$ ${lucroMedioDia.toFixed(2)}\n`;
 
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="gerenciamento.csv";
-  link.click();
+  const lucroTotal=dados[dados.length-1].bancaFinal - dados[0].bancaInicial;
+  const crescimento=(lucroTotal/dados[0].bancaInicial)*100;
+  const lucroMedio=lucroTotal/dados.length;
+  tfoot.innerHTML=`<tr><td colspan="9" style="text-align:right">
+  💰 Lucro Total: R$ ${lucroTotal.toFixed(2)} |
+  📈 Crescimento: ${crescimento.toFixed(2)}% |
+  🗓️ Lucro Médio/Dia: R$ ${lucroMedio.toFixed(2)}</td></tr>`;
 }
 
-/* === EVENTOS === */
-["bancaInicial","investimentoPercentual","payoutPercentual","operacoesPorDia","diasPlanejamento"]
-.forEach(id=>document.getElementById(id).addEventListener("input",calcularDados));
-document.querySelectorAll('input[name="tipoGerenciamento"]').forEach(r=>r.addEventListener("change",calcularDados));
+window.marcar=function(index,acao){
+  // simular resultado manual
+  const dia=dados[index];
+  let bancaAnt=dados[index].bancaInicial;
+  if(acao==='loss'){
+    // se loss na primeira -> parar o dia
+    const perda=dia.entradas[0];
+    dia.lucroDia=-perda;
+    dia.bancaFinal=bancaAnt-dia.entradas[0];
+    // zera todas seguintes
+    for(let i=index+1;i<dados.length;i++){
+      dados[i].bancaInicial=dados[i-1].bancaFinal;
+      dados[i].bancaFinal=dados[i].bancaInicial; // sem lucro
+      dados[i].lucroDia=0;
+    }
+  }else{
+    // win -> recalcula normalmente a partir do dia atual
+    calcular();
+  }
+  render();
+}
 
-carregarDados();
-calcularDados();
+function bancaInput(id){return document.getElementById(id).value;}
+
+["bancaInicial","investimentoPercentual","payoutPercentual","operacoesPorDia","diasPlanejamento"]
+.forEach(id=>document.getElementById(id).addEventListener("input",calcular));
+document.querySelectorAll('input[name="tipoGerenciamento"]').forEach(r=>r.addEventListener("change",calcular));
+
+calcular();
+});
 </script>
+</body>
+</html>
