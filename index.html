@@ -1,297 +1,269 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Planilha Excel - Opções Binárias</title>
-    <style>
-        * {margin: 0; padding: 0; box-sizing: border-box;}
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; padding: 20px;
-        }
-        .container {
-            max-width: 1000px; margin: 0 auto; background: white;
-            border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white; padding: 40px; text-align: center;
-        }
-        .header h1 {font-size: 2.5em; margin-bottom: 15px; font-weight: 300;}
-        .header p {opacity: 0.9; font-size: 1.2em; line-height: 1.6;}
-        .content {padding: 40px;}
-        .config-section {
-            background: #f8f9fa; border-radius: 15px; padding: 30px;
-            margin-bottom: 30px; border-left: 5px solid #667eea;
-        }
-        .config-section h2 {
-            color: #2c3e50; margin-bottom: 20px; font-size: 1.5em;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .config-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px; margin-bottom: 25px;
-        }
-        .input-group {display: flex; flex-direction: column; gap: 8px;}
-        .input-group label {font-weight: 600; color: #2c3e50; font-size: 1em;}
-        .input-group input {
-            padding: 15px; border: 2px solid #e9ecef; border-radius: 10px;
-            font-size: 1.1em; transition: all 0.3s ease; background: white;
-        }
-        .input-group input:focus {
-            outline: none; border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-        }
-        .preview-section {
-            background: #e8f4fd; border-radius: 15px; padding: 25px;
-            margin-bottom: 30px; border-left: 5px solid #4facfe;
-        }
-        .preview-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px; margin-top: 15px;
-        }
-        .preview-item {
-            background: white; padding: 15px; border-radius: 8px; text-align: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-        .preview-item h4 {color: #2c3e50; font-size: 0.9em; margin-bottom: 8px;}
-        .preview-item .value {color: #27ae60; font-size: 1.3em; font-weight: 700;}
-        .download-section {text-align: center; margin-bottom: 30px;}
-        .download-btn {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: white; border: none; padding: 18px 40px; border-radius: 50px;
-            cursor: pointer; font-size: 1.2em; font-weight: 600;
-            transition: all 0.3s ease; display: inline-flex; align-items: center;
-            gap: 10px; text-decoration: none; margin-bottom: 20px;
-        }
-        .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(46,204,113,0.4);
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-        }
-        .download-csv {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            margin-left: 10px;
-        }
-        .download-csv:hover {box-shadow: 0 15px 30px rgba(52,152,219,0.4);}
-        .table-preview {
-            background: white; border-radius: 10px; overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-top: 20px;
-            max-height: 600px; overflow-y: auto;
-        }
-        .table-preview table {width: 100%; border-collapse: collapse;}
-        .table-preview th {
-            background: #2c3e50; color: white; padding: 12px 8px;
-            font-size: 0.8em; text-align: center; position: sticky; top: 0;
-        }
-        .table-preview td {
-            padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f4;
-            font-size: 0.85em;
-        }
-        .table-preview tr:nth-child(even) {background-color: #f8f9fa;}
-        .currency {color: #27ae60; font-weight: 600;}
-        @media (max-width: 768px) {
-            .container {margin: 10px; border-radius: 15px;}
-            .header {padding: 30px 20px;}
-            .header h1 {font-size: 2em;}
-            .content {padding: 25px 20px;}
-            .config-grid {grid-template-columns: 1fr;}
-            .preview-grid {grid-template-columns: 1fr;}
-            .download-btn {width: 100%; margin-bottom: 10px; margin-left: 0;}
-            .download-csv {margin-left: 0;}
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Planilha Excel - Opções Binárias</title>
+<style>
+/* === ESTILOS GERAIS === */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  min-height:100vh;padding:20px;
+}
+.container{
+  max-width:1000px;margin:0 auto;background:#fff;border-radius:20px;
+  box-shadow:0 25px 50px rgba(0,0,0,0.15);overflow:hidden;
+}
+.header{
+  background:linear-gradient(135deg,#2c3e50 0%,#34495e 100%);
+  color:white;padding:40px;text-align:center;
+}
+.header h1{font-size:2.5em;margin-bottom:15px;font-weight:300;}
+.header p{opacity:.9;font-size:1.2em;line-height:1.6;}
+.content{padding:40px;}
+.config-section{
+  background:#f8f9fa;border-radius:15px;padding:30px;margin-bottom:30px;
+  border-left:5px solid #667eea;
+}
+.config-section h2{
+  color:#2c3e50;margin-bottom:20px;font-size:1.5em;
+  display:flex;align-items:center;gap:10px;
+}
+.config-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;margin-bottom:25px;
+}
+.input-group{display:flex;flex-direction:column;gap:8px;}
+.input-group label{font-weight:600;color:#2c3e50;font-size:1em;}
+.input-group input{
+  padding:15px;border:2px solid #e9ecef;border-radius:10px;font-size:1.1em;
+  transition:all .3s ease;background:white;
+}
+.input-group input:focus{
+  outline:none;border-color:#667eea;
+  box-shadow:0 0 0 3px rgba(102,126,234,.1);
+}
+.preview-section{
+  background:#e8f4fd;border-radius:15px;padding:25px;margin-bottom:30px;
+  border-left:5px solid #4facfe;
+}
+.preview-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;margin-top:15px;
+}
+.preview-item{
+  background:white;padding:15px;border-radius:8px;text-align:center;
+  box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+.preview-item .value{color:#27ae60;font-size:1.3em;font-weight:700;}
+.download-section{text-align:center;margin-bottom:30px;}
+.download-btn{
+  background:linear-gradient(135deg,#27ae60 0%,#2ecc71 100%);
+  color:white;border:none;padding:18px 40px;border-radius:50px;
+  cursor:pointer;font-size:1.2em;font-weight:600;
+  transition:all .3s ease;margin:5px;
+}
+.download-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 15px 30px rgba(46,204,113,0.4);
+}
+.download-csv{background:linear-gradient(135deg,#3498db 0%,#2980b9 100%);}
+.table-preview{background:white;border-radius:10px;overflow:hidden;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);margin-top:20px;max-height:600px;overflow-y:auto;}
+.table-preview table{width:100%;border-collapse:collapse;}
+.table-preview th{background:#2c3e50;color:white;padding:12px;font-size:.8em;position:sticky;top:0;}
+.table-preview td{padding:10px;text-align:center;border-bottom:1px solid #f1f3f4;font-size:.85em;}
+.currency{color:#27ae60;font-weight:600;}
+@media(max-width:768px){
+  .content{padding:20px;}
+  .download-btn{width:100%;}
+}
+</style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1>📊 Gerador de Planilha Excel</h1>
-        <p>Configure seu gerenciamento e baixe uma planilha personalizada<br>para controle de banca em opções binárias</p>
+  <div class="header">
+    <h1>📊 Gerador de Planilha Excel</h1>
+    <p>Escolha o tipo de gerenciamento e veja o crescimento da banca</p>
+  </div>
+
+  <div class="content">
+    <div class="config-section">
+      <h2>🧭 Tipo de Gerenciamento</h2>
+      <div style="display:flex;gap:20px;align-items:center;">
+        <label><input type="radio" name="tipoGerenciamento" value="fixo" checked> Mão Fixa / Porcentagem</label>
+        <label><input type="radio" name="tipoGerenciamento" value="soros"> Mão de Soros</label>
+      </div>
     </div>
 
-    <div class="content">
-        <!-- NOVA SEÇÃO DE GERENCIAMENTO -->
-        <div class="config-section">
-            <h2>🧭 Tipo de Gerenciamento</h2>
-            <div style="display:flex; gap:20px; align-items:center;">
-                <label><input type="radio" name="tipoGerenciamento" value="fixo" checked> Mão Fixa / Porcentagem</label>
-                <label><input type="radio" name="tipoGerenciamento" value="soros"> Mão de Soros</label>
-            </div>
+    <div class="config-section">
+      <h2>⚙️ Configurações Principais</h2>
+      <div class="config-grid">
+        <div class="input-group">
+          <label>💰 Banca Inicial (R$)</label>
+          <input type="number" id="bancaInicial" value="400" min="1" step="0.01">
         </div>
-
-        <div class="config-section">
-            <h2>⚙️ Configurações Principais</h2>
-            <div class="config-grid">
-                <div class="input-group">
-                    <label for="bancaInicial">💰 Banca Inicial (R$)</label>
-                    <input type="number" id="bancaInicial" value="400" min="1" step="0.01">
-                </div>
-                <div class="input-group">
-                    <label for="investimentoPercentual">💸 % Investimento Diário</label>
-                    <input type="number" id="investimentoPercentual" value="10" min="0.1" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label for="payoutPercentual">💹 Payout (%)</label>
-                    <input type="number" id="payoutPercentual" value="88" min="50" step="1">
-                </div>
-                <div class="input-group">
-                    <label for="operacoesPorDia">🔢 Operações por Dia</label>
-                    <input type="number" id="operacoesPorDia" value="2" min="1" max="20" step="1">
-                </div>
-                <div class="input-group">
-                    <label for="diasPlanejamento">📅 Dias de Planejamento</label>
-                    <input type="number" id="diasPlanejamento" value="30" min="1" max="365" step="1">
-                </div>
-            </div>
+        <div class="input-group">
+          <label>💸 % Investimento Diário</label>
+          <input type="number" id="investimentoPercentual" value="10" min="0.1" step="0.1">
         </div>
-
-        <div class="preview-section">
-            <h2 style="color:#0c5460;">📈 Previsão de Resultados</h2>
-            <div class="preview-grid">
-                <div class="preview-item"><h4>Banca Final</h4><div class="value" id="previewBancaFinal">R$ 0,00</div></div>
-                <div class="preview-item"><h4>Lucro Total</h4><div class="value" id="previewLucroTotal">R$ 0,00</div></div>
-                <div class="preview-item"><h4>Crescimento</h4><div class="value" id="previewCrescimento">0%</div></div>
-                <div class="preview-item"><h4>Entrada por Op.</h4><div class="value" id="previewEntradaPorOp">R$ 0,00</div></div>
-                <div class="preview-item"><h4>Lucro por Op.</h4><div class="value" id="previewLucroPorOp">R$ 0,00</div></div>
-            </div>
-            <div class="table-preview">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Dia</th><th>Banca Inicial</th><th>% Investido</th>
-                            <th>Total Investido</th><th>Ops/Dia</th><th>Entrada/Op</th>
-                            <th>Lucro/Op</th><th>Nova Banca</th><th>Gerenciamento</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewTable"></tbody>
-                </table>
-            </div>
+        <div class="input-group">
+          <label>💹 Payout (%)</label>
+          <input type="number" id="payoutPercentual" value="88" min="50" step="1">
         </div>
-
-        <div class="download-section">
-            <button class="download-btn" onclick="gerarPlanilhaExcel()">📥 Baixar Excel (.xlsx)</button>
-            <button class="download-btn download-csv" onclick="gerarPlanilhaCSV()">📄 Baixar CSV</button>
+        <div class="input-group">
+          <label>🔢 Operações por Dia</label>
+          <input type="number" id="operacoesPorDia" value="2" min="1" max="20" step="1">
         </div>
+        <div class="input-group">
+          <label>📅 Dias de Planejamento</label>
+          <input type="number" id="diasPlanejamento" value="30" min="1" max="365" step="1">
+        </div>
+      </div>
     </div>
+
+    <div class="preview-section">
+      <h2 style="color:#0c5460;">📈 Previsão de Resultados</h2>
+      <div class="preview-grid">
+        <div class="preview-item"><h4>Banca Final</h4><div class="value" id="previewBancaFinal">R$ 0,00</div></div>
+        <div class="preview-item"><h4>Lucro Total</h4><div class="value" id="previewLucroTotal">R$ 0,00</div></div>
+        <div class="preview-item"><h4>Crescimento</h4><div class="value" id="previewCrescimento">0%</div></div>
+        <div class="preview-item"><h4>Entrada por Op.</h4><div class="value" id="previewEntradaPorOp">R$ 0,00</div></div>
+        <div class="preview-item"><h4>Lucro por Op.</h4><div class="value" id="previewLucroPorOp">R$ 0,00</div></div>
+      </div>
+
+      <div class="table-preview">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th><th>Banca Inicial</th><th>% Investido</th>
+              <th>Total Investido</th><th>Ops/Dia</th><th>Entrada/Op</th>
+              <th>Lucro/Op</th><th>Nova Banca</th><th>Gerenciamento</th>
+            </tr>
+          </thead>
+          <tbody id="previewTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="download-section">
+      <button class="download-btn" onclick="gerarPlanilhaCSV()">📄 Baixar CSV</button>
+    </div>
+  </div>
 </div>
 
 <script>
-let dadosCalculados = [];
+let dadosCalculados=[];
 
-function carregarDadosSalvos() {
-    const dadosSalvos = localStorage.getItem('opcoesBindarias_config');
-    if (dadosSalvos) {
-        try {
-            const config = JSON.parse(dadosSalvos);
-            document.getElementById('bancaInicial').value = config.bancaInicial || 400;
-            document.getElementById('investimentoPercentual').value = config.investimentoPercentual || 10;
-            document.getElementById('payoutPercentual').value = config.payoutPercentual || 88;
-            document.getElementById('operacoesPorDia').value = config.operacoesPorDia || 2;
-            document.getElementById('diasPlanejamento').value = config.diasPlanejamento || 30;
-            if (config.tipoGerenciamento)
-                document.querySelector(`input[value="${config.tipoGerenciamento}"]`).checked = true;
-        } catch (e) { console.error('Erro ao carregar:', e); }
+function salvarDados(){
+  const cfg={
+    bancaInicial:+document.getElementById("bancaInicial").value||400,
+    investimentoPercentual:+document.getElementById("investimentoPercentual").value||10,
+    payoutPercentual:+document.getElementById("payoutPercentual").value||88,
+    operacoesPorDia:+document.getElementById("operacoesPorDia").value||2,
+    diasPlanejamento:+document.getElementById("diasPlanejamento").value||30,
+    tipoGerenciamento:document.querySelector('input[name="tipoGerenciamento"]:checked').value
+  };
+  localStorage.setItem("configBinarias",JSON.stringify(cfg));
+}
+
+function carregarDados(){
+  const s=localStorage.getItem("configBinarias");
+  if(!s)return;
+  const c=JSON.parse(s);
+  document.getElementById("bancaInicial").value=c.bancaInicial;
+  document.getElementById("investimentoPercentual").value=c.investimentoPercentual;
+  document.getElementById("payoutPercentual").value=c.payoutPercentual;
+  document.getElementById("operacoesPorDia").value=c.operacoesPorDia;
+  document.getElementById("diasPlanejamento").value=c.diasPlanejamento;
+  if(c.tipoGerenciamento)
+    document.querySelector(`input[value="${c.tipoGerenciamento}"]`).checked=true;
+}
+
+function calcularDados(){
+  const bancaInicial=+document.getElementById("bancaInicial").value||400;
+  const perc=+document.getElementById("investimentoPercentual").value||10;
+  const payout=+document.getElementById("payoutPercentual").value||88;
+  const ops=+document.getElementById("operacoesPorDia").value||2;
+  const dias=+document.getElementById("diasPlanejamento").value||30;
+  const tipo=document.querySelector('input[name="tipoGerenciamento"]:checked').value;
+
+  dadosCalculados=[];
+  let banca=bancaInicial;
+
+  for(let d=1;d<=dias;d++){
+    let investDia,entrada, lucroOp, lucroTotal, novaBanca;
+    if(tipo==="fixo"){
+      investDia=banca*(perc/100);
+      entrada=investDia/ops;
+      lucroOp=entrada*(payout/100);
+      lucroTotal=lucroOp*ops;
+      novaBanca=banca+lucroTotal;
+    }else{
+      let entradaBase=banca*(perc/100);
+      let lucroAcumulado=0;
+      for(let i=1;i<=ops;i++){
+        let e=i===1?entradaBase:entradaBase+lucroAcumulado;
+        lucroAcumulado+=e*(payout/100);
+      }
+      investDia=entradaBase;
+      entrada=entradaBase;
+      lucroOp=entradaBase*(payout/100);
+      lucroTotal=lucroAcumulado;
+      novaBanca=banca+lucroAcumulado;
     }
+    dadosCalculados.push({dia:d,bancaInicial:banca,investimentoPercentual:perc,
+      totalInvestidoDia:investDia,operacoesPorDia:ops,entradaPorOperacao:entrada,
+      lucroPorOperacao:lucroOp,novaBanca:novaBanca,tipoGerenciamento:tipo});
+    banca=novaBanca;
+  }
+  atualizarPreview();salvarDados();
 }
 
-function salvarDados() {
-    const config = {
-        bancaInicial: parseFloat(document.getElementById('bancaInicial').value) || 400,
-        investimentoPercentual: parseFloat(document.getElementById('investimentoPercentual').value) || 10,
-        payoutPercentual: parseFloat(document.getElementById('payoutPercentual').value) || 88,
-        operacoesPorDia: parseInt(document.getElementById('operacoesPorDia').value) || 2,
-        diasPlanejamento: parseInt(document.getElementById('diasPlanejamento').value) || 30,
-        tipoGerenciamento: document.querySelector('input[name="tipoGerenciamento"]:checked').value
-    };
-    localStorage.setItem('opcoesBindarias_config', JSON.stringify(config));
+function atualizarPreview(){
+  if(!dadosCalculados.length)return;
+  const bi=dadosCalculados[0].bancaInicial;
+  const bf=dadosCalculados.at(-1).novaBanca;
+  const lucroTotal=bf-bi;
+  const crescimento=((bf-bi)/bi)*100;
+  document.getElementById("previewBancaFinal").textContent=`R$ ${bf.toFixed(2)}`;
+  document.getElementById("previewLucroTotal").textContent=`R$ ${lucroTotal.toFixed(2)}`;
+  document.getElementById("previewCrescimento").textContent=`${crescimento.toFixed(1)}%`;
+  document.getElementById("previewEntradaPorOp").textContent=`R$ ${dadosCalculados[0].entradaPorOperacao.toFixed(2)}`;
+  document.getElementById("previewLucroPorOp").textContent=`R$ ${dadosCalculados[0].lucroPorOperacao.toFixed(2)}`;
+
+  const t=document.getElementById("previewTable");t.innerHTML="";
+  dadosCalculados.forEach(r=>{
+    t.innerHTML+=`<tr><td>${r.dia}</td><td class='currency'>R$ ${r.bancaInicial.toFixed(2)}</td>
+      <td>${r.investimentoPercentual}%</td><td class='currency'>R$ ${r.totalInvestidoDia.toFixed(2)}</td>
+      <td>${r.operacoesPorDia}</td><td class='currency'>R$ ${r.entradaPorOperacao.toFixed(2)}</td>
+      <td class='currency'>R$ ${r.lucroPorOperacao.toFixed(2)}</td>
+      <td class='currency'>R$ ${r.novaBanca.toFixed(2)}</td><td>${r.tipoGerenciamento}</td></tr>`;
+  });
 }
 
-function calcularDados() {
-    const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
-    const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
-    const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
-    const operacoesPorDia = parseInt(document.getElementById('operacoesPorDia').value) || 2;
-    const diasPlanejamento = parseInt(document.getElementById('diasPlanejamento').value) || 30;
-    const tipoGerenciamento = document.querySelector('input[name="tipoGerenciamento"]:checked').value;
-
-    dadosCalculados = [];
-    let bancaAtual = bancaInicial;
-
-    for (let dia = 1; dia <= diasPlanejamento; dia++) {
-        let totalInvestidoDia, entradaPorOperacao, lucroPorOperacao, lucroTotalDia, novaBanca;
-
-        if (tipoGerenciamento === "fixo") {
-            totalInvestidoDia = bancaAtual * (investimentoPercentual / 100);
-            entradaPorOperacao = totalInvestidoDia / operacoesPorDia;
-            lucroPorOperacao = entradaPorOperacao * (payoutPercentual / 100);
-            lucroTotalDia = lucroPorOperacao * operacoesPorDia;
-            novaBanca = bancaAtual + lucroTotalDia;
-        } else {
-            let entradaBase = bancaAtual * (investimentoPercentual / 100);
-            let lucroAcumulado = 0;
-            for (let op = 1; op <= operacoesPorDia; op++) {
-                let entrada = op === 1 ? entradaBase : entradaBase + lucroAcumulado;
-                let lucro = entrada * (payoutPercentual / 100);
-                lucroAcumulado += lucro;
-            }
-            totalInvestidoDia = entradaBase;
-            entradaPorOperacao = entradaBase;
-            lucroPorOperacao = entradaBase * (payoutPercentual / 100);
-            lucroTotalDia = lucroAcumulado;
-            novaBanca = bancaAtual + lucroAcumulado;
-        }
-
-        dadosCalculados.push({
-            dia, bancaInicial: bancaAtual, investimentoPercentual,
-            totalInvestidoDia, operacoesPorDia, entradaPorOperacao,
-            lucroPorOperacao, novaBanca, tipoGerenciamento
-        });
-
-        bancaAtual = novaBanca;
-    }
-
-    atualizarPreview();
-    salvarDados();
+function gerarPlanilhaCSV(){
+  if(!dadosCalculados.length)return;
+  let csv="Dia,Banca Inicial,% Investido,Total Investido,Ops/Dia,Entrada/Op,Lucro/Op,Nova Banca,Gerenciamento\n";
+  dadosCalculados.forEach(i=>{
+    csv+=`${i.dia},${i.bancaInicial.toFixed(2)},${i.investimentoPercentual},${i.totalInvestidoDia.toFixed(2)},${i.operacoesPorDia},${i.entradaPorOperacao.toFixed(2)},${i.lucroPorOperacao.toFixed(2)},${i.novaBanca.toFixed(2)},${i.tipoGerenciamento}\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download="gerenciamento.csv";
+  link.click();
 }
 
-function atualizarPreview() {
-    if (!dadosCalculados.length) return;
-    const bancaInicial = dadosCalculados[0].bancaInicial;
-    const bancaFinal = dadosCalculados[dadosCalculados.length - 1].novaBanca;
-    const lucroTotal = bancaFinal - bancaInicial;
-    const crescimentoPercentual = ((bancaFinal - bancaInicial) / bancaInicial) * 100;
-    const entradaPorOp = dadosCalculados[0].entradaPorOperacao;
-    const lucroPorOp = dadosCalculados[0].lucroPorOperacao;
+/* === EVENTOS === */
+["bancaInicial","investimentoPercentual","payoutPercentual","operacoesPorDia","diasPlanejamento"]
+.forEach(id=>document.getElementById(id).addEventListener("input",calcularDados));
+document.querySelectorAll('input[name="tipoGerenciamento"]').forEach(r=>r.addEventListener("change",calcularDados));
 
-    document.getElementById('previewBancaFinal').textContent = `R$ ${bancaFinal.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-    document.getElementById('previewLucroTotal').textContent = `R$ ${lucroTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-    document.getElementById('previewCrescimento').textContent = `${crescimentoPercentual.toFixed(1)}%`;
-    document.getElementById('previewEntradaPorOp').textContent = `R$ ${entradaPorOp.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-    document.getElementById('previewLucroPorOp').textContent = `R$ ${lucroPorOp.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-
-    const table = document.getElementById('previewTable');
-    table.innerHTML = '';
-    dadosCalculados.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${item.dia}</td><td class="currency">R$ ${item.bancaInicial.toFixed(2)}</td>
-            <td>${item.investimentoPercentual}%</td><td class="currency">R$ ${item.totalInvestidoDia.toFixed(2)}</td>
-            <td>${item.operacoesPorDia}</td><td class="currency">R$ ${item.entradaPorOperacao.toFixed(2)}</td>
-            <td class="currency">R$ ${item.lucroPorOperacao.toFixed(2)}</td>
-            <td class="currency">R$ ${item.novaBanca.toFixed(2)}</td><td>${item.tipoGerenciamento}</td>`;
-        table.appendChild(tr);
-    });
-}
-
-function gerarPlanilhaCSV() {
-    let csv = 'Dia,Banca Inicial,% Investido,Total Investido,Ops/Dia,Entrada/Op,Lucro/Op,Nova Banca,Gerenciamento\n';
-    dadosCalculados.forEach(i=>{
-        csv += `${i.dia},${i.bancaInicial.toFixed(2)},${i.investimentoPercentual},${i.totalInvestidoDia.toFixed(2)},${i.operacoesPorDia},${i.entradaPorOperacao.toFixed(2)},${i.lucroPorOperacao.toFixed(2)},${i.novaBanca.toFixed(2)},${i.tipoGerenciamento}\n`;
-    });
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'gerenciamento_b
+carregarDados();
+calcularDados();
+</script>
+</body>
+</html>
