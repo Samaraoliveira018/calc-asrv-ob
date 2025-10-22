@@ -10,7 +10,7 @@ function salvarDados(){
     payoutPercentual:+document.getElementById("payoutPercentual").value||88,
     operacoesPorDia:+document.getElementById("operacoesPorDia").value||2,
     diasPlanejamento:+document.getElementById("diasPlanejamento").value||30,
-    tipoGerenciamento:document.querySelector('input[name="tipoGerenciamento"]:checked').value
+    tipoGerenciamento:document.querySelector('input[name="tipoGerenciamento"]:checked')?.value||"fixo"
   };
   localStorage.setItem("configBinarias",JSON.stringify(cfg));
 }
@@ -20,17 +20,21 @@ function carregarDados(){
   if(!s)return;
   const c=JSON.parse(s);
 
-  const ids = ["bancaInicial","investimentoPercentual","payoutPercentual","operacoesPorDia","diasPlanejamento"];
+  const ids=["bancaInicial","investimentoPercentual","payoutPercentual","operacoesPorDia","diasPlanejamento"];
   ids.forEach(id=>{
     const el=document.getElementById(id);
     if(el && c[id]!==undefined) el.value=c[id];
   });
-  if(c.tipoGerenciamento)
-    document.querySelector(`input[value="${c.tipoGerenciamento}"]`).checked=true;
+
+  // evita erro caso os inputs ainda não existam
+  if(c.tipoGerenciamento){
+    const radio=document.querySelector(`input[name="tipoGerenciamento"][value="${c.tipoGerenciamento}"]`);
+    if(radio) radio.checked=true;
+  }
 }
 
 function formatar(valor){
-  return valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return valor.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 function calcularDados(){
@@ -39,7 +43,7 @@ function calcularDados(){
   const payout=+document.getElementById("payoutPercentual").value||88;
   const ops=+document.getElementById("operacoesPorDia").value||2;
   const dias=+document.getElementById("diasPlanejamento").value||30;
-  const tipo=document.querySelector('input[name="tipoGerenciamento"]:checked').value;
+  const tipo=document.querySelector('input[name="tipoGerenciamento"]:checked')?.value||"fixo";
 
   dadosCalculados=[];
   let banca=bancaInicial;
@@ -48,17 +52,16 @@ function calcularDados(){
     let totalInvestidoDia, entradaPorOperacao, lucroPorOperacao, lucroTotalDia, novaBanca;
 
     if(tipo==="fixo"){
-      totalInvestidoDia = banca * (perc/100);
-      const entrada = totalInvestidoDia / ops;
-      const lucroOp = entrada * (payout/100);
-      lucroTotalDia = lucroOp * ops;
-      entradaPorOperacao = Array(ops).fill(entrada);
-      lucroPorOperacao   = Array(ops).fill(lucroOp);
-      novaBanca = banca + lucroTotalDia;
-    } else { 
-      const entradaBase = banca * (perc/100);
-      const entradas = [];
-      const lucros   = [];
+      totalInvestidoDia=banca*(perc/100);
+      const entrada=totalInvestidoDia/ops;
+      const lucroOp=entrada*(payout/100);
+      lucroTotalDia=lucroOp*ops;
+      entradaPorOperacao=Array(ops).fill(entrada);
+      lucroPorOperacao=Array(ops).fill(lucroOp);
+      novaBanca=banca+lucroTotalDia;
+    } else {
+      const entradaBase=banca*(perc/100);
+      const entradas=[],lucros=[];
       for(let i=0;i<ops;i++){
         const entradaAtual=(i===0)?entradaBase:(entradaBase+lucros[i-1]);
         const lucroAtual=entradaAtual*(payout/100);
@@ -106,10 +109,9 @@ function aplicarResultado(diaIndex,resultado){
     d.lucroTotalDia-=perda;
     d.novaBanca=d.bancaInicial+d.lucroTotalDia;
     d.resultado="Loss 2ª";
-  }
-  else d.resultado="Win";
+  } else d.resultado="Win";
 
-  // Recalcular dias seguintes
+  // Recalcular os dias seguintes
   for(let i=diaIndex+1;i<dadosCalculados.length;i++){
     const prev=dadosCalculados[i-1];
     dadosCalculados[i].bancaInicial=prev.novaBanca;
@@ -143,11 +145,12 @@ function aplicarResultado(diaIndex,resultado){
   atualizarPreview();
 }
 
-function resetarSimulacao(){
-  dadosCalculados.forEach(d=>{
-    d.resultado="none";
-    calcularDados();
-  });
+function resetarSimulacao(limparConfig=false){
+  dadosCalculados.forEach(d=>d.resultado="none");
+  if(limparConfig){
+    localStorage.removeItem("configBinarias");
+  }
+  calcularDados();
 }
 
 function atualizarPreview(){
@@ -168,12 +171,15 @@ function atualizarPreview(){
   const t=document.getElementById("previewTable");
   t.innerHTML="";
 
-  // botão reset acima da tabela
+  // Botão reset
   t.innerHTML+=`
     <tr style="background:#f0f0f0;">
       <td colspan="10" style="text-align:right;">
-        <button onclick="resetarSimulacao()" style="background:#3498db;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
+        <button onclick="resetarSimulacao()" style="background:#3498db;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-right:5px;">
           🔄 Resetar Simulação
+        </button>
+        <button onclick="resetarSimulacao(true)" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
+          🧹 Resetar Tudo
         </button>
       </td>
     </tr>`;
@@ -181,6 +187,7 @@ function atualizarPreview(){
   dadosCalculados.forEach((r,i)=>{
     const entradaDisp=r.entradaPorOperacao.map((v,j)=>`${j+1}ª: R$ ${formatar(v)}`).join(" → ");
     const lucroDisp=r.lucroPorOperacao.map((v,j)=>`${j+1}ª: R$ ${formatar(v)}`).join(" → ");
+
     let bgColor="";
     if(r.resultado==="Win") bgColor="style='background:#d4edda'";
     else if(r.resultado==="Loss 1ª") bgColor="style='background:#f8d7da'";
