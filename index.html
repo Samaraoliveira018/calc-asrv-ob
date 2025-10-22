@@ -1,6 +1,14 @@
-<h3 id="indicadorBancaAtual" style="text-align:center;color:#2ecc71;margin-top:20px;">
+<!-- Indicador da Banca Atual -->
+<h3 id="indicadorBancaAtual" style="
+  text-align:center;
+  color:#27ae60;
+  margin-top:25px;
+  font-size:1.6em;
+  font-weight:600;
+">
 💰 Banca Atual: R$ 0,00
 </h3>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -54,7 +62,7 @@ function calcularDados(){
   const opsEl=document.getElementById("operacoesPorDia");
   const diasEl=document.getElementById("diasPlanejamento");
 
-  if(!bancaEl||!percEl||!payoutEl||!opsEl||!diasEl) return; // evita erro
+  if(!bancaEl||!percEl||!payoutEl||!opsEl||!diasEl) return; 
 
   const bancaInicial=+bancaEl.value||400;
   const perc=+percEl.value||10;
@@ -179,9 +187,12 @@ function atualizarPreview(){
   const t=document.getElementById("previewTable");
   t.innerHTML="";
 
-  // 💰 indicador de saldo atual
+  // 💰 Indicador da banca com cor dinâmica
   const indicador=document.getElementById("indicadorBancaAtual");
-  if(indicador) indicador.textContent=`💰 Banca Atual: R$ ${formatar(bf)}`;
+  if(indicador){
+    indicador.textContent=`💰 Banca Atual: R$ ${formatar(bf)}`;
+    indicador.style.color = (bf > bi) ? "#27ae60" : (bf < bi) ? "#e74c3c" : "#f1c40f";
+  }
 
   // botão reset
   t.innerHTML+=`
@@ -237,7 +248,7 @@ function atualizarPreview(){
 document.querySelectorAll('input[name="tipoGerenciamento"]').forEach(r=>r.addEventListener("change",calcularDados));
 
 carregarDados();
-setTimeout(calcularDados,100); // espera 100ms p/ garantir DOM pronto
+setTimeout(calcularDados,100);
 
 });
 </script>
