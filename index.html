@@ -470,39 +470,46 @@
         }
 
         function calcularDados() {
-            const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
-            const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
-            const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
-            const operacoesPorDia = parseInt(document.getElementById('operacoesPorDia').value) || 2;
-            const diasPlanejamento = parseInt(document.getElementById('diasPlanejamento').value) || 30;
+    const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
+    const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
+    const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
+    const diasPlanejamento = parseInt(document.getElementById('diasPlanejamento').value) || 30;
 
-            dadosCalculados = [];
-            let bancaAtual = bancaInicial;
+    dadosCalculados = [];
+    let bancaAtual = bancaInicial;
 
-            for (let dia = 1; dia <= diasPlanejamento; dia++) {
-                const totalInvestidoDia = bancaAtual * (investimentoPercentual / 100);
-                const entradaPorOperacao = totalInvestidoDia / operacoesPorDia;
-                const lucroPorOperacao = entradaPorOperacao * (payoutPercentual / 100);
-                const lucroTotalDia = lucroPorOperacao * operacoesPorDia;
-                const novaBanca = bancaAtual + lucroTotalDia;
+    for (let dia = 1; dia <= diasPlanejamento; dia++) {
 
-                dadosCalculados.push({
-                    dia: dia,
-                    bancaInicial: bancaAtual,
-                    investimentoPercentual: investimentoPercentual,
-                    totalInvestidoDia: totalInvestidoDia,
-                    operacoesPorDia: operacoesPorDia,
-                    entradaPorOperacao: entradaPorOperacao,
-                    lucroPorOperacao: lucroPorOperacao,
-                    novaBanca: novaBanca
-                });
+        // 1ª ENTRADA
+        const primeiraEntrada = bancaAtual * (investimentoPercentual / 100);
+        const lucroPrimeira = primeiraEntrada * (payoutPercentual / 100);
 
-                bancaAtual = novaBanca;
-            }
+        // 2ª ENTRADA (MÃO DE SOROS)
+        const segundaEntrada = primeiraEntrada + lucroPrimeira;
+        const lucroSegunda = segundaEntrada * (payoutPercentual / 100);
 
-            atualizarPreview();
-            salvarDados();
-        }
+        // LUCRO TOTAL DO DIA
+        const lucroTotalDia = lucroPrimeira + lucroSegunda;
+
+        const novaBanca = bancaAtual + lucroTotalDia;
+
+        dadosCalculados.push({
+            dia: dia,
+            bancaInicial: bancaAtual,
+            investimentoPercentual: investimentoPercentual,
+            totalInvestidoDia: primeiraEntrada + segundaEntrada,
+            operacoesPorDia: 2,
+            entradaPorOperacao: primeiraEntrada,
+            lucroPorOperacao: lucroPrimeira,
+            novaBanca: novaBanca
+        });
+
+        bancaAtual = novaBanca;
+    }
+
+    atualizarPreview();
+    salvarDados();
+}
 
         function atualizarPreview() {
             if (dadosCalculados.length === 0) return;
