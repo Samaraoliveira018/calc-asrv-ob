@@ -471,7 +471,7 @@
 
         function calcularDados() {
     const bancaInicial = parseFloat(document.getElementById('bancaInicial').value) || 400;
-    const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 10;
+    const investimentoPercentual = parseFloat(document.getElementById('investimentoPercentual').value) || 5;
     const payoutPercentual = parseFloat(document.getElementById('payoutPercentual').value) || 88;
     const diasPlanejamento = parseInt(document.getElementById('diasPlanejamento').value) || 30;
 
@@ -480,13 +480,13 @@
 
     for (let dia = 1; dia <= diasPlanejamento; dia++) {
 
-        // 1ª ENTRADA
+        // PRIMEIRA ENTRADA
         const primeiraEntrada = bancaAtual * (investimentoPercentual / 100);
         const lucroPrimeira = primeiraEntrada * (payoutPercentual / 100);
 
-        // 2ª ENTRADA (MÃO DE SOROS)
-        const segundaEntrada = primeiraEntrada + lucroPrimeira;
-        const lucroSegunda = segundaEntrada * (payoutPercentual / 100);
+        // MÃO DE SOROS
+        const entradaSoros = primeiraEntrada + lucroPrimeira;
+        const lucroSegunda = entradaSoros * (payoutPercentual / 100);
 
         // LUCRO TOTAL DO DIA
         const lucroTotalDia = lucroPrimeira + lucroSegunda;
@@ -494,14 +494,15 @@
         const novaBanca = bancaAtual + lucroTotalDia;
 
         dadosCalculados.push({
-            dia: dia,
+            dia,
             bancaInicial: bancaAtual,
-            investimentoPercentual: investimentoPercentual,
-            totalInvestidoDia: primeiraEntrada + segundaEntrada,
-            operacoesPorDia: 2,
-            entradaPorOperacao: primeiraEntrada,
-            lucroPorOperacao: lucroPrimeira,
-            novaBanca: novaBanca
+            investimentoPercentual,
+            primeiraEntrada,
+            lucroPrimeira,
+            entradaSoros,
+            lucroSegunda,
+            lucroTotalDia,
+            novaBanca
         });
 
         bancaAtual = novaBanca;
@@ -539,16 +540,17 @@
                     tr.style.fontWeight = 'bold';
                 }
                 
-                tr.innerHTML = `
-                    <td><strong>${item.dia}</strong></td>
-                    <td class="currency">R$ ${item.bancaInicial.toFixed(2)}</td>
-                    <td><strong>${item.investimentoPercentual}%</strong></td>
-                    <td class="currency">R$ ${item.totalInvestidoDia.toFixed(2)}</td>
-                    <td><strong>${item.operacoesPorDia}</strong></td>
-                    <td class="currency">R$ ${item.entradaPorOperacao.toFixed(2)}</td>
-                    <td class="currency">R$ ${item.lucroPorOperacao.toFixed(2)}</td>
-                    <td class="currency">R$ ${item.novaBanca.toFixed(2)}</td>
-                `;
+               tr.innerHTML = `
+    <td><strong>${item.dia}</strong></td>
+    <td class="currency">R$ ${item.bancaInicial.toFixed(2)}</td>
+    <td><strong>${item.investimentoPercentual}%</strong></td>
+    <td class="currency">R$ ${item.primeiraEntrada.toFixed(2)}</td>
+    <td class="currency">R$ ${item.lucroPrimeira.toFixed(2)}</td>
+    <td class="currency">R$ ${item.entradaSoros.toFixed(2)}</td>
+    <td class="currency">R$ ${item.lucroSegunda.toFixed(2)}</td>
+    <td class="currency"><strong>R$ ${item.lucroTotalDia.toFixed(2)}</strong></td>
+    <td class="currency">R$ ${item.novaBanca.toFixed(2)}</td>
+`;
                 previewTable.appendChild(tr);
             });
         }
